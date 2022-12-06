@@ -1,7 +1,7 @@
 package com.example.website.controller;
 
 import com.example.website.exceptionHandler.InvalidInputException;
-import com.example.website.exceptionHandler.UserExistedException;
+import com.example.website.exceptionHandler.InfoExistedException;
 import com.example.website.exceptionHandler.InfoNotFoundException;
 import com.example.website.model.ErrorObject;
 import com.example.website.model.Users;
@@ -43,7 +43,7 @@ public class UserController {
             usersService.newUser(savedUser);
             return new ResponseEntity<String>("User Added",HttpStatus.OK);
         }
-        catch(UserExistedException e){
+        catch(InfoExistedException e){
             return new ResponseEntity<String>("User Existed",HttpStatus.BAD_REQUEST);
         }
 

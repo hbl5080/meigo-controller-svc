@@ -3,7 +3,7 @@ package com.example.website.service;
 
 import com.example.website.Repo.UsersRepo;
 import com.example.website.exceptionHandler.InvalidInputException;
-import com.example.website.exceptionHandler.UserExistedException;
+import com.example.website.exceptionHandler.InfoExistedException;
 import com.example.website.exceptionHandler.InfoNotFoundException;
 import com.example.website.model.Users;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ public class UsersService {
     public Users newUser(Users savedUser){
         Users user = usersRepo.findByUserName(savedUser.getUserName());
         if (user!=null){
-            throw new UserExistedException("User existed");
+            throw new InfoExistedException("User existed");
         }
         usersRepo.save(savedUser);
         return savedUser;

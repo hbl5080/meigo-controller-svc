@@ -1,6 +1,8 @@
 package com.example.website.model;
 
+import com.sun.istack.NotNull;
 import lombok.Data;
+import org.hibernate.annotations.Check;
 
 import javax.persistence.*;
 import java.util.List;
@@ -8,11 +10,13 @@ import java.util.List;
 
 @Data
 @Entity
+@Table(name = "Product")
+
 public class Product {
 
     @Id
     private int productID;
-    @Column(unique = true,nullable = false)
+    @Column(name = "productCode",unique = true,nullable = false)
     private String productCode;
     private String productName;
     private String productDescription;
