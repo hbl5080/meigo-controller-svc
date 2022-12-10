@@ -15,6 +15,8 @@ import java.util.List;
 public class Product {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "productIDGenerator")
+    @SequenceGenerator(name = "productIDGenerator", sequenceName = "productSeq",initialValue = 1,allocationSize = 1)
     private int productID;
     @Column(name = "productCode",unique = true,nullable = false)
     private String productCode;
@@ -28,6 +30,17 @@ public class Product {
     private List<Photo> img;
 
     public Product() {
+    }
+
+    public Product(String productCode, String productName, String productDescription, int productNum, String type, int intakePrice, int outtakePrice, List<Photo> img) {
+        this.productCode = productCode;
+        this.productName = productName;
+        this.productDescription = productDescription;
+        this.productNum = productNum;
+        this.type = type;
+        this.intakePrice = intakePrice;
+        this.outtakePrice = outtakePrice;
+        this.img = img;
     }
 
     public int getProductID() {
