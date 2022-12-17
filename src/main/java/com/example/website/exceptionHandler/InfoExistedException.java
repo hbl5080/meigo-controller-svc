@@ -4,4 +4,8 @@ public class InfoExistedException extends RuntimeException{
     public InfoExistedException(String message){
         super(message);
     }
+
+    public InfoExistedException(){
+        super();
+    }
 }

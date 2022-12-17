@@ -1,10 +1,11 @@
 package com.example.website.model;
 
-import com.sun.istack.NotNull;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
-import org.hibernate.annotations.Check;
 
 import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
 import java.util.List;
 
 
@@ -17,16 +18,23 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "productIDGenerator")
     @SequenceGenerator(name = "productIDGenerator", sequenceName = "productSeq",initialValue = 1,allocationSize = 1)
-    private int productID;
+    private Long productId;
     @Column(name = "productCode",unique = true,nullable = false)
     private String productCode;
+    @NotEmpty(message = "Product Name can not be empty")
     private String productName;
     private String productDescription;
+    @NotNull
+    @Min(value = 0,message = "Product Number Must be Greater or equals to 0")
     private int productNum;
     private String type;
+    @Min(value = 0,message = "Intake Price Must be Greater Than 0")
     private int intakePrice;
+    @Min(value = 0,message = "Outtake Price Must be Greater Than 0")
     private int outtakePrice;
-    @OneToMany
+    @Valid
+    @JsonManagedReference
+    @OneToMany(mappedBy = "product")
     private List<Photo> img;
 
     public Product() {
@@ -43,9 +51,11 @@ public class Product {
         this.img = img;
     }
 
-    public int getProductID() {
-        return productID;
+    public Long getProductId() {
+        return productId;
     }
+
+    public void setProductId(Long productID){ this.productId = productID;}
 
     public String getProductCode() {
         return productCode;
@@ -103,7 +113,17 @@ public class Product {
         this.type = type;
     }
 
-    public void setImg(List<Photo> img) {
-        this.img = img;
+    public List<Photo> getImg() {
+        return img;
+    }
+
+    public void addPhoto(Photo photo){
+        img.add(photo);
+        photo.setProduct(this);
+    }
+
+    public void remove(Photo photo){
+        img.remove(photo);
+        photo.setProduct(null);
     }
 }

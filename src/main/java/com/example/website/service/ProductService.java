@@ -10,18 +10,21 @@ import com.example.website.model.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ProductService {
 
+
     @Autowired
     ProductRepo productRepo;
 
     @Autowired
     PhotoRepo photoRepo;
+
+    ProductService productService;
+
 
     //Test
     public Product newProductForTesting(){
@@ -33,29 +36,29 @@ public class ProductService {
     }
 
     //Product
-    public List<Product> getAllProudcts(){
-        return productRepo.findAll();
+    public String getAllProudcts(){
+        return productRepo.findAll().toString();
     }
 
-    public Product getByProductId(int id){
+    public String getByProductId(Long id){
         Optional<Product> product = productRepo.findById(id);
+        if(!product.isPresent()){
+            throw new InfoNotFoundException();
+        }
+
+        return product.get().toString();
+    }
+
+    public String getByProductCode(String code){
+        Optional<Product> product = productRepo.getProductByProductCode(code);
         if(!product.isPresent()){
             throw new InfoNotFoundException("Product Not Found");
         }
 
-        return product.get();
+        return product.get().toString();
     }
 
-    public Product getByProductCode(String code){
-        Product product = productRepo.getProductByProductCode(code);
-        if(product == null){
-            throw new InfoNotFoundException("Product Not Found");
-        }
-
-        return product;
-    }
-
-    public List<Product> getByProductName(String name){
+    public String  getByProductName(String name){
         List<Product> productList = productRepo.getProductByProductName(name);
 
 
@@ -63,52 +66,70 @@ public class ProductService {
             throw new InfoNotFoundException("Product Not Found");
         }
 
-        return productList;
+        return productList.toString();
     }
 
-    public Product newProduct(Product newProduct){
+    public String newProduct(Product newProduct){
 
-        if (newProduct.getProductCode()==null||newProduct.getProductNum()<0||newProduct.getIntakePrice()<0 ){
-            throw new InvalidInputException("Invalid Input");
-        }
-
-        Product product = productRepo.getProductByProductCode(newProduct.getProductCode());
-        if (product != null){
+        Optional<Product> product = productRepo.getProductByProductCode(newProduct.getProductCode());
+        if (product.isPresent()){
             throw new InfoExistedException("Product Existed");
         }
         productRepo.save(newProduct);
-        return newProduct;
+        return newProduct.toString();
     }
 
-    public Product updateProduct(String productCode, Product updateProduct){
+    public String updateProduct(String productCode, Product updateProduct){
         if (updateProduct.getProductCode()==null||updateProduct.getProductNum()<0||updateProduct.getIntakePrice()<0 ){
             throw new InvalidInputException("Invalid Input");
         }
 
-        Product product = productRepo.getProductByProductCode(productCode);
-        if(product ==null){
+        Optional<Product> product = productRepo.getProductByProductCode(productCode);
+        if(!product.isPresent()){
             throw new InfoNotFoundException("Product Not Found");
         }
+        Optional<Product> checkProduct = productRepo.getProductByProductCode(updateProduct.getProductCode());
+        if(checkProduct.isPresent() && !productCode.equals(checkProduct.get().getProductCode()) ){
+            throw new InfoExistedException();
+        }
 
-        updateProduct.setProductID(product.getProductID());
+        updateProduct.setProductId(product.get().getProductId());
         productRepo.save(updateProduct);
-        return updateProduct;
+        return updateProduct.toString();
     }
 
-    public Product deleteProductById(int id){
+    public String deleteProductById(Long id){
         Optional<Product> product = productRepo.findById(id);
         if(!product.isPresent()){
             throw new InfoNotFoundException("Product Not Found");
         }
-
-        List<Photo> photoList = product.get().getImg();
+        Product tempProduct = product.get();
+        List<Photo> photoList = productRepo.getImgByProductId(id);
         for(Photo photo:photoList){
-            photo.setProductId(null);
-            photoRepo.save(photo);
+            tempProduct.remove(photo);
+            photoRepo.delete(photo);
         }
 
         productRepo.deleteById(id);
-        return product.get();
+        return tempProduct.toString();
+    }
+
+    public String deleteProductByCode (String code){
+        Optional<Product> product = productRepo.getProductByProductCode(code);
+        if(!product.isPresent()){
+            throw new InfoNotFoundException();
+        }
+
+        Product tempProduct = product.get();
+        Long id = tempProduct.getProductId();
+        List<Photo> photoList = productRepo.getImgByProductId(id);
+        for(Photo photo:photoList){
+            tempProduct.remove(photo);
+            photoRepo.delete(photo);
+        }
+
+        productRepo.deleteById(tempProduct.getProductId());
+        return tempProduct.toString();
     }
 
     public String deleteAllProduct(){
@@ -118,67 +139,62 @@ public class ProductService {
 
 
     //Photo
-    public Photo newPhoto(Photo photo){
-        photoRepo.save(photo);
-        return photo;
-    }
 
-    public Photo updatePhoto(Photo updatePhoto, int photoId){
-        Optional<Photo> photo =photoRepo.findById(photoId);
-        if(!photo.isPresent()){
-            throw new InfoNotFoundException("Photo Not Found");
+    public String getPhotoByProductCode(String productCode){
+        Optional<Product> product = productRepo.getProductByProductCode(productCode);
+        if(!product.isPresent()){
+            throw new InfoNotFoundException();
         }
 
-        updatePhoto.setPhotoId(photoId);
-        photoRepo.save(updatePhoto);
-        return updatePhoto;
+        List<Photo> photoList = product.get().getImg();
+        return photoList.toString();
     }
 
-    public String deletePhotoById(int photoId){
-        Optional<Photo> photo = photoRepo.findById(photoId);
+    public String addPhoto(Photo photo, String productCode){
+        Optional<Product> product = productRepo.getProductByProductCode(productCode);
+        if(!product.isPresent()){
+            throw new InfoNotFoundException();
+        }
+        Product tempProduct = product.get();
+        photo = photoRepo.save(photo);
+        tempProduct.addPhoto(photo);
+        productRepo.save(tempProduct);
+        return tempProduct.toString();
+    }
+
+    public String removePhotoById(Long photoId){
+
+        Optional<Photo> photo = photoRepo.getPhotoById(photoId);
         if(!photo.isPresent()){
-            throw new InfoNotFoundException("Photo Not Found");
+            throw new InfoNotFoundException();
         }
 
-        String string = photo.get().toString();
+        Optional<Product> product = productRepo.findById(photo.get().getProduct().getProductId());
+        if(!product.isPresent()){
+            throw new InfoNotFoundException();
+        }
+
+        product.get().remove(photo.get());
         photoRepo.deleteById(photoId);
-
-        return string;
+        String productString = product.get().toString();
+        return productString;
     }
 
-    public Photo findPhotoByPhotoId(int photoId){
-        Optional<Photo> photo = photoRepo.findById(photoId);
-        if(!photo.isPresent()){
-            throw new InfoNotFoundException("Photo Not Found");
+    public String removeAllPhotoByProductCode(String productCode){
+        Optional<Product> product = productRepo.getProductByProductCode(productCode);
+        if(!product.isPresent()){
+            throw new InfoNotFoundException();
         }
 
-        return  photo.get();
-    }
-
-    public String deleteAllPhoto(){
-        photoRepo.deleteAll();
-        return "All photo Deleted";
-    }
-
-
-
-    //Product && Photo
-    public String linkPhotoToProduct(int photoId, int productId){
-        Optional<Photo> photo = photoRepo.findById(photoId);
-        Optional<Product> product = productRepo.findById(productId);
-
-        if ((!product.isPresent())||(!photo.isPresent())){
-            throw new InfoNotFoundException("Invalid Input");
+        Product tempProduct = product.get();
+        Long id = tempProduct.getProductId();
+        List<Photo> photoList = productRepo.getImgByProductId(id);
+        for(Photo photo:photoList){
+            tempProduct.remove(photo);
+            photoRepo.delete(photo);
         }
-        List<Photo> photoList = productRepo.getImgByProductCode(productId);
-        photo.get().setProductId(productId);
-        photoList.add(photo.get());
-        product.get().setImg(photoList);
 
-        photoRepo.save(photo.get());
-        productRepo.save(product.get());
-
-        return "Photo:\n"+ photo.get().toString() + "\nProduct:\n"+ product.get().toString();
+        return tempProduct.toString();
     }
-    
+
 }

@@ -1,9 +1,11 @@
 package com.example.website.model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.Arrays;
 
 @Data
@@ -15,17 +17,23 @@ public class Photo {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "photoIDGenerator")
     @SequenceGenerator(name = "photoIDGenerator", sequenceName = "photoSeq",initialValue = 1,allocationSize = 1)
-    private int photoId;
+    private Long photoId;
     private String description;
+    //@NotBlank(message = "image can not be blank")
     private byte[] imageBytes;
 
-    private Integer productId;
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+
     //Getters and Setters
-    public int getPhotoId() {
+    public Long getPhotoId() {
         return photoId;
     }
 
-    public void setPhotoId(int photoId) {
+    public void setPhotoId(Long photoId) {
         this.photoId = photoId;
     }
 
@@ -45,12 +53,24 @@ public class Photo {
         this.imageBytes = imageBytes;
     }
 
-    public Integer getProductId() {
-        return productId;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProductId(Integer productId) {
-        this.productId = productId;
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if (this == o) return true;
+        if (!(o instanceof Photo)) return false;
+        return photoId!=null && photoId.equals(((Photo)o).getPhotoId());
+    }
+
+    @Override
+    public int hashCode(){
+        return getClass().hashCode();
     }
 
     @Override
@@ -59,7 +79,6 @@ public class Photo {
                 "photoId=" + photoId +
                 ", description='" + description + '\'' +
                 ", imageBytes=" + Arrays.toString(imageBytes) +
-                ", productId=" + productId +
                 '}';
     }
 
