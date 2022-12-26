@@ -1,7 +1,7 @@
 package com.example.website.service;
 
-import com.example.website.Repo.PhotoRepo;
-import com.example.website.Repo.ProductRepo;
+import com.example.website.Repo.Product.PhotoRepo;
+import com.example.website.Repo.Product.ProductRepo;
 import com.example.website.exceptionHandler.InfoExistedException;
 import com.example.website.exceptionHandler.InfoNotFoundException;
 import com.example.website.exceptionHandler.InvalidInputException;

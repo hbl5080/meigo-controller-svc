@@ -8,6 +8,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.util.Arrays;
 
+import static javax.persistence.FetchType.LAZY;
+
 @Data
 @Entity
 public class Photo {
@@ -20,10 +22,12 @@ public class Photo {
     private Long photoId;
     private String description;
     //@NotBlank(message = "image can not be blank")
+    @Lob
+    @Basic(fetch = LAZY)
     private byte[] imageBytes;
 
     @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 

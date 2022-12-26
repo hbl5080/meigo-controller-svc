@@ -3,12 +3,11 @@ package com.example.website.controller;
 
 import com.example.website.exceptionHandler.InfoExistedException;
 import com.example.website.exceptionHandler.InfoNotFoundException;
-import com.example.website.exceptionHandler.InvalidInputException;
-import com.example.website.model.NewPhoto;
 import com.example.website.model.Photo;
 import com.example.website.model.Product;
 import com.example.website.model.UpdateProduct;
 import com.example.website.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
+@Slf4j
+@CrossOrigin
 @RestController
 @RequestMapping("/product")
 public class ProductController {
@@ -147,10 +148,10 @@ public class ProductController {
     }
 
     @PostMapping("/newphoto")
-    public ResponseEntity<Object> newPhoto(@RequestBody @Valid NewPhoto newPhoto)
+    public ResponseEntity<Object> newPhoto(@RequestParam String productCode,@RequestBody @Valid Photo photo)
             throws InfoExistedException{
         try{
-            String product = productService.addPhoto(newPhoto.getPhoto(), newPhoto.getProductCode());
+            String product = productService.addPhoto(photo, productCode);
             return new ResponseEntity<>(product,HttpStatus.OK);
         }
         catch (InfoExistedException infoExistedException){
