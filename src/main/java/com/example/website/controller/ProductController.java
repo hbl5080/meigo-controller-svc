@@ -3,6 +3,7 @@ package com.example.website.controller;
 
 import com.example.website.exceptionHandler.InfoExistedException;
 import com.example.website.exceptionHandler.InfoNotFoundException;
+import com.example.website.model.NewPhoto;
 import com.example.website.model.Photo;
 import com.example.website.model.Product;
 import com.example.website.model.UpdateProduct;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -148,13 +150,20 @@ public class ProductController {
     }
 
     @PostMapping("/newphoto")
-    public ResponseEntity<Object> newPhoto(@RequestParam String productCode,@RequestBody @Valid Photo photo)
+    public ResponseEntity<Object> newPhoto(@RequestParam String productCode,@RequestParam("file") MultipartFile file)
+
             throws InfoExistedException{
+        Photo tempP = new Photo();
+
         try{
-            String product = productService.addPhoto(photo, productCode);
+            tempP.setImageBytes(file.getBytes());
+            String product = productService.addPhoto(tempP, productCode);
             return new ResponseEntity<>(product,HttpStatus.OK);
         }
         catch (InfoExistedException infoExistedException){
+            throw new InfoExistedException();
+        }
+        catch (Exception e){
             throw new InfoExistedException();
         }
     }
