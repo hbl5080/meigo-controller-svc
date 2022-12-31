@@ -1,6 +1,6 @@
 package com.example.website.Repo.Product;
 
-import com.example.website.model.Photo;
+import com.example.website.model.Product.Photo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

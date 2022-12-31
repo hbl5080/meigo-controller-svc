@@ -1,5 +1,7 @@
-package com.example.website.model;
+package com.example.website.model.Product;
 
+
+import com.example.website.model.Product.Product;
 
 public class UpdateProduct {
 

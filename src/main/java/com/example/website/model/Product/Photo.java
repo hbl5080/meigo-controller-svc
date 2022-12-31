@@ -1,11 +1,11 @@
-package com.example.website.model;
+package com.example.website.model.Product;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.util.Arrays;
 
 import static javax.persistence.FetchType.LAZY;
@@ -20,10 +20,13 @@ public class Photo {
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "photoIDGenerator")
     @SequenceGenerator(name = "photoIDGenerator", sequenceName = "photoSeq",initialValue = 1,allocationSize = 1)
     private Long photoId;
-    private String description;
-    //@NotBlank(message = "image can not be blank")
+
+    private String imageName;
+    private String imageType;
+
     @Lob
     @Basic(fetch = LAZY)
+    @Column(name = "imageBytes",columnDefinition = "MEDIUMBLOB")
     private byte[] imageBytes;
 
     @JsonBackReference
@@ -41,12 +44,20 @@ public class Photo {
         this.photoId = photoId;
     }
 
-    public String getDescription() {
-        return description;
+    public String getImageName() {
+        return imageName;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public String getImageType() {
+        return imageType;
+    }
+
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
     }
 
     public byte[] getImageBytes() {
@@ -81,7 +92,6 @@ public class Photo {
     public String toString() {
         return "Photo{" +
                 "photoId=" + photoId +
-                ", description='" + description + '\'' +
                 ", imageBytes=" + Arrays.toString(imageBytes) +
                 '}';
     }

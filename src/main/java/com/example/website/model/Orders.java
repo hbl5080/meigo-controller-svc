@@ -1,5 +1,6 @@
 package com.example.website.model;
 
+import com.example.website.model.Product.Product;
 import lombok.Data;
 
 import java.util.List;

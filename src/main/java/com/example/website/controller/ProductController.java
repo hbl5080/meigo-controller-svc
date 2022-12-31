@@ -3,19 +3,22 @@ package com.example.website.controller;
 
 import com.example.website.exceptionHandler.InfoExistedException;
 import com.example.website.exceptionHandler.InfoNotFoundException;
-import com.example.website.model.NewPhoto;
-import com.example.website.model.Photo;
-import com.example.website.model.Product;
-import com.example.website.model.UpdateProduct;
+import com.example.website.exceptionHandler.InvalidInputException;
+import com.example.website.model.Product.Photo;
+import com.example.website.model.Product.Product;
+import com.example.website.model.Product.UpdateProduct;
 import com.example.website.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -138,11 +141,15 @@ public class ProductController {
 
 //    Photo
     @GetMapping("/getphotobyproductcode")
-    public ResponseEntity<Object> getPhotoByProductCode(@RequestParam String productCode)
+    public ResponseEntity<Object> getPhotoByProductCode(@RequestParam Long photoId)
             throws InfoNotFoundException{
         try{
-            String photoList = productService.getPhotoByProductCode(productCode);
-            return new ResponseEntity<>(photoList,HttpStatus.OK);
+            Photo photo = productService.getPhotoByProductCode(photoId);
+            HttpHeaders httpHeaders = new HttpHeaders();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; file name=\""+photo.getImageName()+"\"")
+                    .body(photo.getImageBytes());
         }
         catch (InfoNotFoundException infoNotFoundException){
             throw new InfoNotFoundException();
@@ -150,21 +157,24 @@ public class ProductController {
     }
 
     @PostMapping("/newphoto")
-    public ResponseEntity<Object> newPhoto(@RequestParam String productCode,@RequestParam("file") MultipartFile file)
+    public ResponseEntity<Object> newPhoto(@RequestParam String productCode,@RequestParam("files") MultipartFile[] files)
 
-            throws InfoExistedException{
-        Photo tempP = new Photo();
-
+            throws InfoExistedException, InvalidInputException {
         try{
-            tempP.setImageBytes(file.getBytes());
-            String product = productService.addPhoto(tempP, productCode);
-            return new ResponseEntity<>(product,HttpStatus.OK);
+            List<String> fileNames = new ArrayList<>();
+
+            Arrays.asList(files).stream().forEach(file -> {
+                productService.addPhoto(file, productCode);
+                fileNames.add(file.getOriginalFilename());
+            });
+            String message = "Upload the files successfully" + fileNames;
+            return new ResponseEntity<>(message,HttpStatus.OK);
         }
         catch (InfoExistedException infoExistedException){
             throw new InfoExistedException();
         }
-        catch (Exception e){
-            throw new InfoExistedException();
+        catch (InvalidInputException invalidInputException){
+            throw new InvalidInputException();
         }
     }
 

@@ -1,4 +1,4 @@
-package com.example.website.model;
+package com.example.website.model.Product;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;

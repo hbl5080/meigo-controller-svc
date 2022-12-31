@@ -1,11 +1,11 @@
 package com.example.website.model;
 
-import com.sun.istack.NotNull;
 import lombok.Data;
 
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Entity
@@ -23,10 +23,14 @@ public class Users {
     private String lastName;
     private String userName;
     private String password;
+    @Email
     private String email;
+    @Size(min = 10,max = 10)
     private String phone;
-    @OneToMany
-    private List<Address> Address;
+    @Valid
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "Address_id")
+    private List<Address> addressList;
 
     public Users() {
     }
@@ -57,7 +61,15 @@ public class Users {
         this.password = password;
         this.email = email;
         this.phone = phone;
-        Address = address;
+        addressList = address;
+    }
+
+    public void addAddress(Address address){
+        addressList.add(address);
+    }
+
+    public void removeAddress(Address address){
+        addressList.remove(address);
     }
 
     public Integer getUserID() {
@@ -116,11 +128,11 @@ public class Users {
         this.phone = phone;
     }
 
-    public List<com.example.website.model.Address> getAddress() {
-        return Address;
+    public List<com.example.website.model.Address> getAddressList() {
+        return addressList;
     }
 
-    public void setAddress(List<com.example.website.model.Address> address) {
-        Address = address;
+    public void setAddressList(List<com.example.website.model.Address> addressList) {
+        this.addressList = addressList;
     }
 }
