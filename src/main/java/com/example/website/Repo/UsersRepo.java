@@ -1,12 +1,12 @@
 package com.example.website.Repo;
 
 
-import com.example.website.model.Users;
+import com.example.website.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
-public interface UsersRepo extends JpaRepository<Users,Integer> {
+public interface UsersRepo extends JpaRepository<User,Integer> {
 
-    Users findByUserName(String userName);
+    User findByUserName(String userName);
 
 }

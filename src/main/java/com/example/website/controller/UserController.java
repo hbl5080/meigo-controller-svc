@@ -4,7 +4,7 @@ import com.example.website.exceptionHandler.InvalidInputException;
 import com.example.website.exceptionHandler.InfoExistedException;
 import com.example.website.exceptionHandler.InfoNotFoundException;
 import com.example.website.model.ErrorObject;
-import com.example.website.model.Users;
+import com.example.website.model.User;
 import com.example.website.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +22,7 @@ public class UserController {
     UsersService usersService;
 
     @GetMapping("/getallusers")
-    public List<Users> getAllUsers(){
+    public List<User> getAllUsers(){
             return usersService.getAllUsers();
     }
 
@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @PostMapping("/newuser")
-    public ResponseEntity<String> newUser(Users savedUser){
+    public ResponseEntity<String> newUser(User savedUser){
         try{
             usersService.newUser(savedUser);
             return new ResponseEntity<String>("User Added",HttpStatus.OK);
@@ -50,7 +50,7 @@ public class UserController {
     }
 
     @PostMapping("/updateuser")
-    public ResponseEntity<String> updateUser(@RequestBody Users savedUser){
+    public ResponseEntity<String> updateUser(@RequestBody User savedUser){
         try{
             usersService.updateUser(savedUser);
             return new ResponseEntity<String>("User updated",HttpStatus.OK);

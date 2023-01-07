@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Data
-public class Users {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "userIDGenerator")
@@ -32,10 +32,10 @@ public class Users {
     @JoinColumn(name = "Address_id")
     private List<Address> addressList;
 
-    public Users() {
+    public User() {
     }
 
-    public Users(Integer userID, String firstName, String lastName, String userName, String password, String email, String phone) {
+    public User(Integer userID, String firstName, String lastName, String userName, String password, String email, String phone) {
         this.userID = userID;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -45,7 +45,7 @@ public class Users {
         this.phone = phone;
     }
 
-    public Users(String firstName,String lastName, String userName, String password, String email, String phone) {
+    public User(String firstName, String lastName, String userName, String password, String email, String phone) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;
@@ -54,7 +54,7 @@ public class Users {
         this.phone = phone;
     }
 
-    public Users(String firstName, String lastName, String userName, String password, String email, String phone, List<com.example.website.model.Address> address) {
+    public User(String firstName, String lastName, String userName, String password, String email, String phone, List<com.example.website.model.Address> address) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.userName = userName;

@@ -1,11 +1,6 @@
 package com.example.website;
 
 //import com.example.website.Repo.AddressRepo;
-import com.example.website.Repo.UsersRepo;
-import com.example.website.model.Address;
-import com.example.website.model.Users;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 // implements CommandLineRunner
@@ -22,7 +17,7 @@ public class WebsiteApplication{
     /*
     @Override
     public void run(String...args){
-        Users userInfo = new Users("firstname1",
+        User userInfo = new User("firstname1",
                 "lastname1",
                 "username",
                 "pw",

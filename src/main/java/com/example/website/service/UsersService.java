@@ -5,7 +5,7 @@ import com.example.website.Repo.UsersRepo;
 import com.example.website.exceptionHandler.InvalidInputException;
 import com.example.website.exceptionHandler.InfoExistedException;
 import com.example.website.exceptionHandler.InfoNotFoundException;
-import com.example.website.model.Users;
+import com.example.website.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,12 +19,12 @@ public class UsersService {
     UsersRepo usersRepo;
 
 
-    public List<Users> getAllUsers(){
+    public List<User> getAllUsers(){
         return usersRepo.findAll();
     }
 
-    public Users getByUserID(int id){
-        Optional<Users> user =usersRepo.findById(id);
+    public User getByUserID(int id){
+        Optional<User> user =usersRepo.findById(id);
         if (!user.isPresent()){
             throw  new InfoNotFoundException("User Not Found");
         }
@@ -35,8 +35,8 @@ public class UsersService {
         usersRepo.deleteAll();
     }
 
-    public Users deleteById(int id){
-        Optional<Users> user = usersRepo.findById(id);
+    public User deleteById(int id){
+        Optional<User> user = usersRepo.findById(id);
         if(!user.isPresent()){
             throw new InfoNotFoundException("User Not Found");
         }
@@ -44,8 +44,8 @@ public class UsersService {
         return user.get();
     }
 
-    public Users newUser(Users savedUser){
-        Users user = usersRepo.findByUserName(savedUser.getUserName());
+    public User newUser(User savedUser){
+        User user = usersRepo.findByUserName(savedUser.getUserName());
         if (user!=null){
             throw new InfoExistedException("User existed");
         }
@@ -54,12 +54,12 @@ public class UsersService {
     }
 
 
-    public Users updateUser(Users savedUser){
+    public User updateUser(User savedUser){
         if (savedUser==null){
             throw new InvalidInputException("Invalid Input");
         }
 
-        Users user = usersRepo.findByUserName(savedUser.getUserName());
+        User user = usersRepo.findByUserName(savedUser.getUserName());
         if (user==null){
             throw new InfoNotFoundException("User Not Found");
         }
