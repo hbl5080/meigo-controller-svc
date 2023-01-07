@@ -26,7 +26,7 @@ public class Photo {
 
     @Lob
     @Basic(fetch = LAZY)
-    @Column(name = "imageBytes",columnDefinition = "MEDIUMBLOB")
+    @Column(name = "imageBytes")
     private byte[] imageBytes;
 
     @JsonBackReference
