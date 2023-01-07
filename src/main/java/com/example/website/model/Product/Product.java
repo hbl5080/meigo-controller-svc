@@ -18,20 +18,28 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "productIDGenerator")
     @SequenceGenerator(name = "productIDGenerator", sequenceName = "productSeq",initialValue = 1,allocationSize = 1)
+    @Column(name = "product_id")
     private Long productId;
+
     @Column(name = "productCode",unique = true,nullable = false)
     private String productCode;
+
     @NotEmpty(message = "Product Name can not be empty")
     private String productName;
     private String productDescription;
+
     @NotNull
     @Min(value = 0,message = "Product Number Must be Greater or equals to 0")
     private int productNum;
+
     private String type;
+
     @Min(value = 0,message = "Intake Price Must be Greater Than 0")
     private int intakePrice;
+
     @Min(value = 0,message = "Outtake Price Must be Greater Than 0")
     private int outtakePrice;
+
     @Valid
     @JsonManagedReference
     @OneToMany(mappedBy = "product")

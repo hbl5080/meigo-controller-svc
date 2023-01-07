@@ -4,6 +4,7 @@ import com.example.website.model.Product.Product;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Entity
@@ -12,9 +13,11 @@ public class Orders {
    @Id
    @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "orderIDGenerator")
    @SequenceGenerator(name = "orderIDGenerator", sequenceName = "orderSeq",initialValue = 1,allocationSize = 1)
+   @Column(name = "order_id")
    private int orderID;
    private String orderNumber;
 
+   @NotBlank
    @ManyToOne
    @JoinColumn(name = "address_id")
    private Address address;
@@ -23,7 +26,7 @@ public class Orders {
    @JoinColumn(name = "user_id")
    private User user;
 
+   @NotBlank
    @OneToMany (cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-   @JoinColumn(name = "product_id")
    private List<Product> products;
 }

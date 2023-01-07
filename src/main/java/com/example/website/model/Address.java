@@ -13,6 +13,7 @@ public class Address{
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "addressIDGenerator")
     @SequenceGenerator(name = "addressIDGenerator", sequenceName = "addressSeq",initialValue = 0,allocationSize = 1)
+    @Column(name = "address_id")
     private Integer addressId;
     @NotBlank
     private String street1;
