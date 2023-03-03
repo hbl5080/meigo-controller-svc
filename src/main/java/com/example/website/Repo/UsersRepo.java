@@ -1,12 +1,15 @@
 package com.example.website.Repo;
 
 
-import com.example.website.model.User;
+import com.example.website.model.User.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 
-public interface UsersRepo extends JpaRepository<User,Integer> {
+@Repository
+public interface UsersRepo extends JpaRepository<User,Long> {
 
-    User findByUserName(String userName);
+    Optional<User> findByUserName(String userName);
 
 }

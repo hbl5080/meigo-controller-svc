@@ -1,4 +1,4 @@
-package com.example.website.model;
+package com.example.website.model.User.Address;
 
 import lombok.Data;
 
@@ -14,13 +14,17 @@ public class Address{
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "addressIDGenerator")
     @SequenceGenerator(name = "addressIDGenerator", sequenceName = "addressSeq",initialValue = 0,allocationSize = 1)
     @Column(name = "address_id")
-    private Integer addressId;
+    private Long addressId;
     @NotBlank
+    @Column(name = "street1")
     private String street1;
+    @Column(name = "street2")
     private String street2;
-
+    @Column(name = "city")
     private String city;
+    @Column(name = "country")
     private String country;
+    @Column(name = "zipCode")
     private String zipCode;
 
     //Constructors
@@ -37,11 +41,11 @@ public class Address{
     }
 
     // Getters and Setters
-    public Integer getAddressId() {
+    public Long getAddressId() {
         return addressId;
     }
 
-    public void setAddressId(Integer addressId) {
+    public void setAddressId(Long addressId) {
         this.addressId = addressId;
     }
 

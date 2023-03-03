@@ -1,12 +1,11 @@
 package com.example.website.Repo;
 
-import com.example.website.model.Address;
+import com.example.website.model.User.Address.Address;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
-public interface AddressRepo extends JpaRepository<Address,Integer> {
+@Repository
+public interface AddressRepo extends JpaRepository<Address,Long> {
 
 
 

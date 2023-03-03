@@ -2,8 +2,7 @@ package com.example.website.service;
 
 import com.example.website.Repo.AddressRepo;
 import com.example.website.exceptionHandler.InfoNotFoundException;
-import com.example.website.exceptionHandler.InvalidInputException;
-import com.example.website.model.Address;
+import com.example.website.model.User.Address.Address;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +21,7 @@ public class AddressService {
         return addressList == null ? addressList:Arrays.asList(new Address());
     }
 
-    public Address getByAddressID(Integer id){
+    public Address getByAddressID(Long id){
         Optional<Address> address =addressRepo.findById(id);
         if (!address.isPresent()){
             throw  new InfoNotFoundException("Address Not Found");
@@ -36,7 +35,7 @@ public class AddressService {
     }
 
 
-    public Address updateAddress(int addressId,Address savedAddress){
+    public Address updateAddress(Long addressId,Address savedAddress){
         Optional<Address> address = addressRepo.findById(addressId);
         if(!address.isPresent()){
             throw new InfoNotFoundException("Address ID Not Found");
@@ -56,7 +55,7 @@ public class AddressService {
         addressRepo.deleteAll();
     }
 
-    public Address deleteByAddressId(int addressId){
+    public Address deleteByAddressId(Long addressId){
         Optional<Address> address = addressRepo.findById(addressId);
         if(!address.isPresent()){
             throw new InfoNotFoundException("Address Not Found");
