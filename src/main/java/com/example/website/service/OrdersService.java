@@ -8,12 +8,13 @@ import com.example.website.exceptionHandler.InvalidInputException;
 import com.example.website.model.Order.Order;
 import com.example.website.model.Order.OrderItem;
 import com.example.website.model.Product.Product;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.sql.Timestamp;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class OrdersService {
@@ -24,203 +25,87 @@ public class OrdersService {
     @Autowired
     ProductRepo productRepo;
 
-    public List<Order> getAllOrder(){
+    public List<Order> getAllOrder() {
         return orderRepo.findAll();
     }
 
-    public Order getOrderById(Long orderID){
+    public Order getOrderById(Long orderID) {
         Optional<Order> order = orderRepo.findById(orderID);
-        if(order.isPresent()){
+        if (order.isPresent()) {
             return order.get();
         }
 
         throw new InfoNotFoundException();
     }
 
-    public Order newOrder(Order newOrder){
-        Optional<Order> order =orderRepo.findByOrderNumber(newOrder.getOrderNumber());
-        if(order.isPresent()){
-            throw new InfoExistedException();
-        }
-
-        newOrder.getProducts().stream().forEach(
-                orderItem->{
-                    Product Product = productRepo.findById(orderItem.getProductId())
-                            .orElseThrow(()->new InfoNotFoundException("Product does not exist"));
-                    if (Product.getProductNum()<orderItem.getAmount()){
-                        throw new InvalidInputException("Not enough products");
-                    }
-                }
-        );
-
-
+    public Order newOrder(Order newOrder) {
+        List<Product> productList = new ArrayList();
         newOrder.getProducts().stream().forEach(
                 orderItem -> {
                     Product product = productRepo.findById(orderItem.getProductId())
-                            .orElseThrow(()->new InfoNotFoundException("Product does not exist 2"));
-                    product.setProductNum(product.getProductNum()-orderItem.getAmount());
-                    productRepo.save(product);
+                            .orElseThrow(() -> new InfoNotFoundException("Product does not exist"));
+                    if (product.getProductNum() < orderItem.getAmount()) {
+                        throw new InvalidInputException("Not enough products");
+                    }
+                    product.setProductNum(product.getProductNum() - orderItem.getAmount());
+                    productList.add(product);
                 }
         );
 
+        productRepo.saveAll(productList);
+
+        newOrder.setCreatedDate(new Timestamp(new java.util.Date().getTime()));
+        newOrder.setUpdatedDate(new Timestamp(new java.util.Date().getTime()));
+        newOrder.setOrderNumber("OR" + RandomStringUtils.random(15,false,true));
         orderRepo.save(newOrder);
         return newOrder;
-
-        //        for (OrderItem orderItem:newOrder.getProducts()){
-//            Optional<Product> product = productRepo.findById(orderItem.getProductId());
-//            if(product.isPresent()){
-//                Product newProduct = orderItem.getProductId();
-//                if(newProduct.getProductNum()<orderItem.getAmount()){
-//                    throw new InvalidInputException();
-//                }
-//            }
-//            else{
-//                throw new InfoNotFoundException("Product does not exist");
-//            }
-//
-//        }
-
-//        for (OrderItem orderItem:newOrder.getProducts()){
-//            Optional<Product> product = productRepo.findById(orderItem.getProductId().getProductId());
-//            if(product.isPresent()){
-//                product.get().setProductNum(product.get().getProductNum()- orderItem.getAmount());
-//                productRepo.save(product.get());
-//            }
-//            else{
-//                throw new InfoNotFoundException("Product does not exist");
-//            }
-//        }
     }
 
-    public Order cancelOrder(Long orderId){
-        Optional<Order> tempOrder = orderRepo.findById(orderId);
-        if(!tempOrder.isPresent()){
-            throw new InfoNotFoundException("Order dose not exist");
-        }
-        Order order = tempOrder.get();
-        for (OrderItem orderItem: order.getProducts()){
-            Optional<Product> product = productRepo.findById(orderItem.getProductId());
-            if (product.isPresent()){
-                product.get().setProductNum(product.get().getProductNum()+ orderItem.getAmount());
-                productRepo.save(product.get());
-            }
-            else{
-                throw new InfoNotFoundException("Product does not exist");
-            }
-        }
+    public Order getOrderByOrderNumber(String orderNum){
+        return orderRepo.findByOrderNumber(orderNum).orElseThrow(()-> new InfoNotFoundException("Order dose not exist"));
+    }
 
-        orderRepo.deleteById(order.getOrderID());
+    public Order cancelOrder(Long orderId) {
+        Order order = orderRepo.findById(orderId).orElseThrow(()-> new InfoNotFoundException("Order dose not exist"));
+        order.setStatus("cancelled");
+
+        order.getProducts().parallelStream().forEach(orderItem -> {
+            Optional<Product> tempProduct = productRepo.findById(orderItem.getProductId());
+            if (tempProduct.isPresent()) {
+                Product product = tempProduct.get();
+                product.setProductNum(product.getProductNum() + orderItem.getAmount());
+                productRepo.save(product);
+            }
+        });
+
+        order.setUpdatedDate(new Timestamp(new java.util.Date().getTime()));
+        orderRepo.save(order);
         return order;
     }
 
-    public Order updateOrder(Order updateOrder, Long orderId){
-        Optional<Order> order = orderRepo.findById(orderId);
-        if(!order.isPresent()){
-            throw new InfoNotFoundException("Order does not exist");
-        }
-
-        HashMap<Long, Integer> amounts = new HashMap<>();
-        // put all old products to amounts
-        for (OrderItem orderItem:order.get().getProducts()){
-            Optional<Product> product = productRepo.findById(orderItem.getProductId());
-            if (product.isPresent()){
-                Integer amountInStock = product.get().getProductNum()+orderItem.getAmount();
-                amounts.put(orderItem.getProductId(),amountInStock);
-            }
-            else {
-                throw new InvalidInputException("Something went wrong");
-            }
-        }
-
-        // check availability for updateOrder
-        for (OrderItem orderItem:updateOrder.getProducts()){
-            Optional<Product> product = productRepo.findById(orderItem.getProductId());
-            if(product.isPresent()){
-                Long productId =product.get().getProductId();
-                if (!amounts.containsKey(productId)){
-                    amounts.put(productId,product.get().getProductNum());
+    public Order updateOrder(Order updateOrder, Long orderId) {
+        Order order = orderRepo.findById(orderId).orElseThrow(()-> new InfoNotFoundException("Order dose not exist"));
+        Map<Long, Integer> amounts = updateOrder.getProducts().stream().collect(Collectors.toMap(OrderItem::getProductId, OrderItem::getAmount));
+        List<Product> productList = new ArrayList<>();
+        order.getProducts().forEach(orderItem -> {
+            if(orderItem.getAmount() != amounts.get(orderItem.getProductId())){
+                Optional<Product> tempProduct = productRepo.findById(orderItem.getProductId());
+                if (tempProduct.isPresent()) {
+                    Product product = tempProduct.get();
+                    product.setProductNum(product.getProductNum() + (orderItem.getAmount() - amounts.get(orderItem.getProductId())));
+                    if(product.getProductNum() < 0){
+                        throw new InvalidInputException("Not enough Amount on product " + product.getProductName());
+                    }
+                    productList.add(product);
                 }
-
-                if (amounts.get(productId)<orderItem.getAmount()){
-                    throw new InvalidInputException("Not enough Amount");
-                }
-
-                amounts.put(productId,amounts.get(productId)-orderItem.getAmount());
             }
-            else{
-                throw new InfoNotFoundException("Product does not exist");
-            }
-        }
-
-        // update products
-        for(Long productId: amounts.keySet()){
-            Optional<Product> product = productRepo.findById(productId);
-            if(product.isPresent()){
-                product.get().setProductNum(amounts.get(productId));
-                productRepo.save(product.get());
-            }
-            else{
-                throw new InfoNotFoundException("Product does not exist");
-            }
-        }
-
+        });
+        productRepo.saveAll(productList);
         updateOrder.setOrderID(orderId);
+        updateOrder.setUpdatedDate(new Timestamp(new java.util.Date().getTime()));
         orderRepo.save(updateOrder);
         return updateOrder;
     }
 
 }
-
-//    public Order newOrder(String orderNumber, List<OrderItem> orderItemList, Long userId, Address address){
-//        Optional<Order> order =orderRepo.findOrderByOrderNumber(orderNumber);
-//
-//        if(order.isPresent()){
-//            throw new InfoExistedException("Order Existed");
-//        }
-//
-//        //check validation for orderItem list
-//        for (OrderItem orderItem:orderItemList){
-//            Optional<Product> product = productRepo.findById(orderItem.getProductId());
-//            if(product.isPresent()){
-//
-//                if(product.get().getProductNum()<orderItem.getAmount()){
-//                    throw new InvalidInputException();
-//                }
-//            }
-//            else{
-//                throw new InfoNotFoundException("Product does not exist");
-//            }
-//
-//        }
-//
-//        //check validation for user id and address
-//        if(userId==null) {
-//            addressRepo.save(address);
-//        }
-//        else{
-//            Optional<User> user=userRepo.findById(userId);
-//            if(!user.isPresent()){
-//                throw new InfoNotFoundException("User Not Found");
-//            }
-//
-//            if(!user.get().getAddressList().contains(address)) {
-//                throw new InfoNotFoundException("Address Not Existed");
-//            }
-//        }
-//        //minus order number
-//        for (OrderItem orderItem:orderItemList){
-//            Optional<Product> product = productRepo.findById(orderItem.getProductId());
-//            if(product.isPresent()){
-//                product.get().setProductNum(product.get().getProductNum()- orderItem.getAmount());
-//                productRepo.save(product.get());
-//            }
-//            else{
-//                throw new InfoNotFoundException("Product does not exist");
-//            }
-//        }
-//
-//
-//        orderRepo.save(order.get());
-//        return newOrder;
-//    }
 

@@ -8,6 +8,7 @@ import com.example.website.exceptionHandler.InfoExistedException;
 import com.example.website.exceptionHandler.InfoNotFoundException;
 import com.example.website.model.User.Address.Address;
 import com.example.website.model.User.User;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -55,8 +56,21 @@ public class UsersService {
         return true;
     }
 
+    public User regNewUser(User user){
+        Optional<User> tempUser = usersRepo.findByEmail(user.getEmail());
+        if (tempUser.isPresent()){
+            throw new InfoExistedException("User existed");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole("Normal");
+        usersRepo.save(user);
+        user.setPassword("");
+        return user;
+    }
+
     public User newUser(User savedUser){
-        Optional<User> user = usersRepo.findByUserName(savedUser.getUserName());
+        Optional<User> user = usersRepo.findByEmail(savedUser.getEmail());
         if (user.isPresent()){
             throw new InfoExistedException("User existed");
         }
@@ -77,7 +91,7 @@ public class UsersService {
             throw new InvalidInputException("Invalid Input");
         }
 
-        Optional<User> user = usersRepo.findByUserName(savedUser.getUserName());
+        Optional<User> user = usersRepo.findByEmail(savedUser.getEmail());
         if (!user.isPresent()){
             throw new InfoNotFoundException("User Not Found");
         }
@@ -130,16 +144,36 @@ public class UsersService {
         addressRepo.deleteById(addressId);
         return true;
     }
-    public boolean checkPassword(final String userName,final String password){
-        Optional<User> user = usersRepo.findByUserName(userName);
+
+    public User login(final String email, final String password){
+        Optional<User> user = usersRepo.findByEmail(email);
         if(!user.isPresent()){
             throw new InvalidInputException("User Not Found");
         }
-
-        if(!passwordEncoder.matches(password, user.get().getPassword())){
+        if(!user.get().isActive()){
+            throw new InvalidInputException("User Not Active");
+        }
+        if(checkPassword(password, user.get().getPassword())){
             throw new InvalidInputException("Incorrect Password");
         }
+        User tempUser = user.get();
+        tempUser.setToken(RandomStringUtils.random(20,true,true));
+        usersRepo.save(tempUser);
+        return tempUser;
+    }
 
+    public User tokenLogin(String token){
+        Optional<User> user = usersRepo.findByToken(token);
+        if(!user.isPresent()){
+            throw new InvalidInputException("User Not Found");
+        }
+        return user.get();
+    }
+
+    public boolean checkPassword(final String password,final String userPassword){
+        if(!passwordEncoder.matches(password, userPassword)){
+            return false;
+        }
         return true;
     }
 

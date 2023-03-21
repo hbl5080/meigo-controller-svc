@@ -8,6 +8,7 @@ import com.example.website.model.User.Address.addAddressRequest;
 import com.example.website.model.User.LoginRequest;
 import com.example.website.model.User.User;
 import com.example.website.service.UsersService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/user")
+@CrossOrigin
+@Slf4j
 public class UserController {
 
 
@@ -42,7 +45,7 @@ public class UserController {
     @PostMapping("/newuser")
     public ResponseEntity<Object> newUser(@RequestBody User savedUser){
         try{
-            usersService.newUser(savedUser);
+            usersService.regNewUser(savedUser);
             return new ResponseEntity<>(savedUser,HttpStatus.OK);
         }
         catch(InfoExistedException e){
@@ -124,10 +127,20 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody LoginRequest loginRequest){
         try{
-            usersService.checkPassword(loginRequest.getUserName(),loginRequest.getPassword());
-            return new ResponseEntity<>(loginRequest.getUserName(),HttpStatus.ACCEPTED);
+            User user = usersService.login(loginRequest.getEmail(),loginRequest.getPassword());
+            return new ResponseEntity<>(user,HttpStatus.OK);
         }
         catch (InvalidInputException invalidInputException){
+            return new ResponseEntity<>(invalidInputException.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/tokenlogin")
+    public ResponseEntity<Object> tokenLogin(@RequestParam String token){
+        try{
+            User user = usersService.tokenLogin(token);
+            return new ResponseEntity<>(user, HttpStatus.OK);
+        }catch (InvalidInputException invalidInputException){
             return new ResponseEntity<>(invalidInputException.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }

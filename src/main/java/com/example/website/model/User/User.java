@@ -23,19 +23,14 @@ public class User {
     @Column(name = "firstName")
     private String firstName;
 
-
-
     @Column(name = "lastName")
     private String lastName;
-
-    @Column(name = "userName",unique = true,nullable = false)
-    private String userName;
 
     @NotBlank
     @Column(name = "password",nullable = false)
     private String password;
     @Email
-    @Column(name = "email")
+    @Column(name = "email", unique = true,nullable = false)
     private String email;
     @Size(min = 10,max = 10)
     @Column(name = "phone")
@@ -43,25 +38,27 @@ public class User {
     //@Valid
     //@JsonManagedReference
     @OneToMany(cascade = CascadeType.ALL)
-    @Column(name = "addressList")
     private List<Address> addressList;
 
+    private boolean active;
+
+    private String role = "Normal";
+
+    private String token = "";
     public User() {
     }
 
-    public User(String firstName, String lastName, String userName, String password, String email, String phone) {
+    public User(String firstName, String lastName, String password, String email, String phone) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.userName = userName;
         this.password = password;
         this.email = email;
         this.phone = phone;
     }
 
-    public User(String firstName, String lastName, String userName, String password, String email, String phone, List<Address> address) {
+    public User(String firstName, String lastName, String password, String email, String phone, List<Address> address) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.userName = userName;
         this.password = password;
         this.email = email;
         this.phone = phone;
@@ -99,15 +96,6 @@ public class User {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
 
     public String getEmail() {
         return email;

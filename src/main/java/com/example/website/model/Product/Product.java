@@ -32,13 +32,23 @@ public class Product {
     @Min(value = 0,message = "Product Number Must be Greater or equals to 0")
     private int productNum;
 
-    private String type;
+    private String productType;
+
+    private String productScale;
 
     @Min(value = 0,message = "Intake Price Must be Greater Than 0")
-    private int intakePrice;
+    private int productInputPrice;
 
     @Min(value = 0,message = "Outtake Price Must be Greater Than 0")
-    private int outtakePrice;
+    private int productOutputPrice;
+
+    private String manufacturer;
+
+    private String origin;
+
+    private String defaultImg;
+
+    private Long defaultImgCode;
 
     @Valid
     @JsonManagedReference
@@ -48,14 +58,15 @@ public class Product {
     public Product() {
     }
 
-    public Product(String productCode, String productName, String productDescription, int productNum, String type, int intakePrice, int outtakePrice, List<Photo> img) {
+    public Product(String productCode, String productName, String productDescription, int productNum, String productType, String productScale, int productInputPrice, int productOutputPrice, List<Photo> img) {
         this.productCode = productCode;
         this.productName = productName;
         this.productDescription = productDescription;
         this.productNum = productNum;
-        this.type = type;
-        this.intakePrice = intakePrice;
-        this.outtakePrice = outtakePrice;
+        this.productType = productType;
+        this.productInputPrice = productInputPrice;
+        this.productOutputPrice = productOutputPrice;
+        this.productScale = productScale;
         this.img = img;
     }
 
@@ -90,19 +101,19 @@ public class Product {
     }
 
     public int getIntakePrice() {
-        return intakePrice;
+        return productInputPrice;
     }
 
     public void setIntakePrice(int intakePrice) {
-        this.intakePrice = intakePrice;
+        this.productInputPrice = intakePrice;
     }
 
     public int getOuttakePrice() {
-        return outtakePrice;
+        return productOutputPrice;
     }
 
     public void setOuttakePrice(int outtakePrice) {
-        this.outtakePrice = outtakePrice;
+        this.productOutputPrice = outtakePrice;
     }
     public int getProductNum() {
         return productNum;
@@ -114,11 +125,11 @@ public class Product {
 
 
     public String getType() {
-        return type;
+        return productType;
     }
 
     public void setType(String type) {
-        this.type = type;
+        this.productType = type;
     }
 
     public List<Photo> getImg() {

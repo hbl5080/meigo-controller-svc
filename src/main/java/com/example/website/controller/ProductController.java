@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
-@CrossOrigin
+@CrossOrigin("http://localhost:3000")
 @RestController
 @RequestMapping("/product")
 public class ProductController {
@@ -31,136 +31,137 @@ public class ProductController {
     ProductService productService;
 
 
-
     //Test
     @GetMapping("/emptyproduct")
-    public Product getEmptyProduct(){
+    public Product getEmptyProduct() {
         return productService.newProductForTesting();
     }
 
     @GetMapping("/emptyphoto")
-    public Photo getEmptyPhoto(){
+    public Photo getEmptyPhoto() {
         return productService.newPhotoForTesting();
     }
 
     //Product
     @GetMapping("/getallproduct")
-    public String getAllProduct(){
+    public List<Product> getAllProduct() {
         return productService.getAllProudcts();
     }
 
     @GetMapping("/getproductbyid")
-    public ResponseEntity<Object> getProductById(@RequestParam Long id) throws InfoNotFoundException{
-        try{
-            String product = productService.getByProductId(id);
+    public ResponseEntity<Object> getProductById(@RequestParam Long id) throws InfoNotFoundException {
+        try {
+            Product product = productService.getByProductId(id);
             return new ResponseEntity<>(product, HttpStatus.OK);
-        }
-        catch (InfoNotFoundException e){
+        } catch (InfoNotFoundException e) {
             throw new InfoNotFoundException();
         }
     }
 
     @GetMapping("/getproductbycode")
-    public ResponseEntity<Object> getProductByCode(@RequestParam String code) throws InfoNotFoundException{
-        try{
+    public ResponseEntity<Object> getProductByCode(@RequestParam String code) throws InfoNotFoundException {
+        try {
             String product = productService.getByProductCode(code);
             return new ResponseEntity<>(product, HttpStatus.OK);
-        }
-        catch (InfoNotFoundException e){
+        } catch (InfoNotFoundException e) {
             throw new InfoNotFoundException();
         }
     }
 
     @GetMapping("/getproductbyname")
-    public ResponseEntity<Object> getProductByName(@RequestParam String name) throws InfoNotFoundException{
-        try{
+    public ResponseEntity<Object> getProductByName(@RequestParam String name) throws InfoNotFoundException {
+        try {
             String productList = productService.getByProductName(name);
-            return new ResponseEntity<>(productList,HttpStatus.OK);
-        }
-        catch (InfoNotFoundException e){
+            return new ResponseEntity<>(productList, HttpStatus.OK);
+        } catch (InfoNotFoundException e) {
             throw new InfoNotFoundException();
         }
     }
 
     @PostMapping("/newproduct")
-    public ResponseEntity<Object> newProduct(@Valid @RequestBody Product newProduct){
-        try{
-            String product = productService.newProduct(newProduct);
-            return new ResponseEntity<>(product,HttpStatus.OK);
-        }
-        catch(InfoExistedException existedException){
+    public ResponseEntity<Object> newProduct(@Valid @RequestBody Product newProduct) {
+        try {
+            Product product = productService.newProduct(newProduct);
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        } catch (InfoExistedException existedException) {
             throw new InfoExistedException();
         }
     }
 
     @PostMapping("/updateproduct")
     public ResponseEntity<Object> updateProduct(@RequestBody @Valid UpdateProduct updateProduct)
-        throws InfoNotFoundException,InfoExistedException{
-        try{
-            String product = productService.updateProduct(updateProduct.getProductCode(),updateProduct.getProduct());
-            return new ResponseEntity<>(product,HttpStatus.OK);
-        }
-        catch (InfoNotFoundException infoNotFoundException){
+            throws InfoNotFoundException, InfoExistedException {
+        try {
+            String product = productService.updateProduct(updateProduct.getProductCode(), updateProduct.getProduct());
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        } catch (InfoNotFoundException infoNotFoundException) {
             throw new InfoNotFoundException();
-        }
-        catch (InfoExistedException infoExistedException){
+        } catch (InfoExistedException infoExistedException) {
             throw new InfoExistedException();
         }
 
     }
 
-    @DeleteMapping ("/deleteproductbyid")
+    @DeleteMapping("/deleteproductbyid")
     public ResponseEntity<Object> deleteProductById(@RequestParam Long productId)
-        throws InfoNotFoundException{
-        try{
+            throws InfoNotFoundException {
+        try {
             String product = productService.deleteProductById(productId);
-            return new ResponseEntity<>(product,HttpStatus.OK);
-        }
-        catch (InfoNotFoundException infoNotFoundException){
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        } catch (InfoNotFoundException infoNotFoundException) {
             throw new InfoNotFoundException();
         }
     }
 
     @DeleteMapping("/deleteproductbycode")
-    public ResponseEntity<Object> deleteProductByCode (@RequestParam String productCode)
+    public ResponseEntity<Object> deleteProductByCode(@RequestParam String productCode)
             throws InfoNotFoundException {
-        try{
+        try {
             String product = productService.deleteProductByCode(productCode);
-            return new ResponseEntity<>(product,HttpStatus.OK);
-        }
-        catch (InfoNotFoundException infoNotFoundException){
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        } catch (InfoNotFoundException infoNotFoundException) {
             throw new InfoNotFoundException();
         }
     }
 
     @DeleteMapping("/deleteAll")
-    public ResponseEntity<Object> deleteAllProduct(){
+    public ResponseEntity<Object> deleteAllProduct() {
         productService.deleteAllProduct();
-        return new ResponseEntity<>("All Product Deleted",HttpStatus.OK);
+        return new ResponseEntity<>("All Product Deleted", HttpStatus.OK);
     }
 
-//    Photo
+    //    Photo
     @GetMapping("/getphotobyproductcode")
     public ResponseEntity<Object> getPhotoByProductCode(@RequestParam Long photoId)
-            throws InfoNotFoundException{
-        try{
+            throws InfoNotFoundException {
+        try {
             Photo photo = productService.getPhotoByProductCode(photoId);
-            HttpHeaders httpHeaders = new HttpHeaders();
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; file name=\""+photo.getImageName()+"\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; file name=\"" + photo.getImageName() + "\"")
                     .body(photo.getImageBytes());
-        }
-        catch (InfoNotFoundException infoNotFoundException){
+        } catch (InfoNotFoundException infoNotFoundException) {
             throw new InfoNotFoundException();
         }
     }
 
-    @PostMapping("/newphoto")
-    public ResponseEntity<Object> newPhoto(@RequestParam String productCode,@RequestParam("files") MultipartFile[] files)
+    @GetMapping("/getphotobyphotoid")
+    public ResponseEntity<Object> getPhotoByPhotoId(@RequestParam(value = "photoid") Long photoid) throws InfoNotFoundException {
+        try {
+            Photo photo = productService.getPhotoByPhotoId(photoid);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; file name=\"" + photo.getImageName() + "\"")
+                    .body(photo.getImageBytes());
+        } catch (InfoNotFoundException infoNotFoundException) {
+            throw new InfoNotFoundException();
+        }
+    }
+
+    @PostMapping(value = "/newphoto", consumes = {"multipart/form-data"})
+    public ResponseEntity<Object> newPhoto(@RequestParam String productCode, @RequestParam("files") MultipartFile[] files)
 
             throws InfoExistedException, InvalidInputException {
-        try{
+        try {
             List<String> fileNames = new ArrayList<>();
 
             Arrays.asList(files).stream().forEach(file -> {
@@ -168,36 +169,32 @@ public class ProductController {
                 fileNames.add(file.getOriginalFilename());
             });
             String message = "Upload the files successfully" + fileNames;
-            return new ResponseEntity<>(message,HttpStatus.OK);
-        }
-        catch (InfoExistedException infoExistedException){
+            return new ResponseEntity<>(message, HttpStatus.OK);
+        } catch (InfoExistedException infoExistedException) {
             throw new InfoExistedException();
-        }
-        catch (InvalidInputException invalidInputException){
+        } catch (InvalidInputException invalidInputException) {
             throw new InvalidInputException();
         }
     }
 
     @DeleteMapping("/deletephotobyphotoid")
     public ResponseEntity<Object> deletePhotoByPhotoId(@RequestParam Long photoId)
-            throws InfoNotFoundException{
-        try{
+            throws InfoNotFoundException {
+        try {
             String product = productService.removePhotoById(photoId);
-            return new ResponseEntity<>(product,HttpStatus.OK);
-        }
-        catch (InfoNotFoundException infoNotFoundException){
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        } catch (InfoNotFoundException infoNotFoundException) {
             throw new InfoNotFoundException();
         }
     }
 
     @DeleteMapping("/deleteallphotobyproductcode")
     public ResponseEntity<Object> deleteAllPhotoByProductCode(@RequestParam String productCode)
-            throws InfoNotFoundException{
-        try{
+            throws InfoNotFoundException {
+        try {
             String product = productService.removeAllPhotoByProductCode(productCode);
-            return new ResponseEntity<>(product,HttpStatus.OK);
-        }
-        catch (InfoNotFoundException infoNotFoundException) {
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        } catch (InfoNotFoundException infoNotFoundException) {
             throw new InfoNotFoundException();
         }
     }

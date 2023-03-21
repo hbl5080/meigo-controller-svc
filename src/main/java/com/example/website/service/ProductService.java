@@ -7,6 +7,7 @@ import com.example.website.exceptionHandler.InfoNotFoundException;
 import com.example.website.exceptionHandler.InvalidInputException;
 import com.example.website.model.Product.Photo;
 import com.example.website.model.Product.Product;
+import com.example.website.util.ImageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,17 +39,17 @@ public class ProductService {
     }
 
     //Product
-    public String getAllProudcts(){
-        return productRepo.findAll().toString();
+    public List<Product> getAllProudcts(){
+        return productRepo.findAll();
     }
 
-    public String getByProductId(Long id){
+    public Product getByProductId(Long id){
         Optional<Product> product = productRepo.findById(id);
         if(!product.isPresent()){
             throw new InfoNotFoundException();
         }
 
-        return product.get().toString();
+        return product.get();
     }
 
     public String getByProductCode(String code){
@@ -71,14 +72,14 @@ public class ProductService {
         return productList.toString();
     }
 
-    public String newProduct(Product newProduct){
+    public Product newProduct(Product newProduct){
 
         Optional<Product> product = productRepo.getProductByProductCode(newProduct.getProductCode());
         if (product.isPresent()){
             throw new InfoExistedException("Product Existed");
         }
         productRepo.save(newProduct);
-        return newProduct.toString();
+        return newProduct;
     }
 
     public String updateProduct(String productCode, Product updateProduct){
@@ -158,6 +159,16 @@ public class ProductService {
         return photo.get();
     }
 
+    public Photo getPhotoByPhotoId(Long photoId){
+        Optional<Photo> photo = photoRepo.getPhotoById(photoId);
+        if(!photo.isPresent()){
+            throw new InfoNotFoundException();
+        }
+        Photo tempPhoto = photo.get();
+        tempPhoto.setImageBytes(ImageUtil.decompressImage(photo.get().getImageBytes()));
+        return tempPhoto;
+    }
+
     public String addPhoto(MultipartFile file, String productCode){
         Optional<Product> product = productRepo.getProductByProductCode(productCode);
         if(!product.isPresent()){
@@ -167,7 +178,7 @@ public class ProductService {
         try{
             photo.setImageName(file.getOriginalFilename());
             photo.setImageType(file.getContentType());
-            photo.setImageBytes(file.getBytes());
+            photo.setImageBytes(ImageUtil.compressImage(file.getBytes()));
         }
         catch(IOException ioException){
             throw new InvalidInputException();
@@ -176,6 +187,12 @@ public class ProductService {
         Product tempProduct = product.get();
         photo = photoRepo.save(photo);
         tempProduct.addPhoto(photo);
+        if(photo.getImageName().equals(tempProduct.getDefaultImg())){
+            tempProduct.setDefaultImgCode(photo.getPhotoId());
+        }else if(tempProduct.getDefaultImg() == null){
+            tempProduct.setDefaultImg(photo.getImageName());
+            tempProduct.setDefaultImgCode(photo.getPhotoId());
+        }
         productRepo.save(tempProduct);
         return tempProduct.toString();
     }

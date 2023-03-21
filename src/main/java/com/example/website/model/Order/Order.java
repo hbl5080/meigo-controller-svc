@@ -26,7 +26,7 @@ public class Order {
 
    @ManyToOne
    //@JsonManagedReference
-   //@JoinColumn(name = "address_id")
+   @JoinColumn(name = "address_id")
    private Address address;
 
    @ManyToOne
