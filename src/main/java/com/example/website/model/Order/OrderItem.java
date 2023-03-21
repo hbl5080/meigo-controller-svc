@@ -1,7 +1,5 @@
 package com.example.website.model.Order;
 
-import com.example.website.model.Product.Product;
-
 import javax.persistence.*;
 
 @Entity
@@ -13,16 +11,16 @@ public class OrderItem {
     @SequenceGenerator(name = "orderItemIDGenerator", sequenceName = "orderItemSeq",initialValue = 0,allocationSize = 1)
     private Long id;
 
-    @OneToOne
-    private Product product;
+    @Column(name = "product_id")
+    private Long productId;
     private int amount;
 
-    public Product getProduct() {
-        return product;
+    public Long getProductId() {
+        return productId;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setProductId(Long product) {
+        this.productId = product;
     }
 
     public int getAmount() {

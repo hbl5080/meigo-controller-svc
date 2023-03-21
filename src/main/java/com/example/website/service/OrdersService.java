@@ -38,38 +38,58 @@ public class OrdersService {
     }
 
     public Order newOrder(Order newOrder){
-        Optional<Order> order =orderRepo.findOrderByOrderNumber(newOrder.getOrderNumber());
+        Optional<Order> order =orderRepo.findByOrderNumber(newOrder.getOrderNumber());
         if(order.isPresent()){
             throw new InfoExistedException();
         }
 
-        for (OrderItem orderItem:newOrder.getProducts()){
-            Optional<Product> product = productRepo.findById(orderItem.getProduct().getProductId());
-            if(product.isPresent()){
-                Product newProduct = orderItem.getProduct();
-                if(newProduct.getProductNum()<orderItem.getAmount()){
-                    throw new InvalidInputException();
+        newOrder.getProducts().stream().forEach(
+                orderItem->{
+                    Product Product = productRepo.findById(orderItem.getProductId())
+                            .orElseThrow(()->new InfoNotFoundException("Product does not exist"));
+                    if (Product.getProductNum()<orderItem.getAmount()){
+                        throw new InvalidInputException("Not enough products");
+                    }
                 }
-            }
-            else{
-                throw new InfoNotFoundException("Product does not exist");
-            }
+        );
 
-        }
 
-        for (OrderItem orderItem:newOrder.getProducts()){
-            Optional<Product> product = productRepo.findById(orderItem.getProduct().getProductId());
-            if(product.isPresent()){
-                product.get().setProductNum(product.get().getProductNum()- orderItem.getAmount());
-                productRepo.save(product.get());
-            }
-            else{
-                throw new InfoNotFoundException("Product does not exist");
-            }
-        }
+        newOrder.getProducts().stream().forEach(
+                orderItem -> {
+                    Product product = productRepo.findById(orderItem.getProductId())
+                            .orElseThrow(()->new InfoNotFoundException("Product does not exist 2"));
+                    product.setProductNum(product.getProductNum()-orderItem.getAmount());
+                    productRepo.save(product);
+                }
+        );
 
         orderRepo.save(newOrder);
         return newOrder;
+
+        //        for (OrderItem orderItem:newOrder.getProducts()){
+//            Optional<Product> product = productRepo.findById(orderItem.getProductId());
+//            if(product.isPresent()){
+//                Product newProduct = orderItem.getProductId();
+//                if(newProduct.getProductNum()<orderItem.getAmount()){
+//                    throw new InvalidInputException();
+//                }
+//            }
+//            else{
+//                throw new InfoNotFoundException("Product does not exist");
+//            }
+//
+//        }
+
+//        for (OrderItem orderItem:newOrder.getProducts()){
+//            Optional<Product> product = productRepo.findById(orderItem.getProductId().getProductId());
+//            if(product.isPresent()){
+//                product.get().setProductNum(product.get().getProductNum()- orderItem.getAmount());
+//                productRepo.save(product.get());
+//            }
+//            else{
+//                throw new InfoNotFoundException("Product does not exist");
+//            }
+//        }
     }
 
     public Order cancelOrder(Long orderId){
@@ -79,7 +99,7 @@ public class OrdersService {
         }
         Order order = tempOrder.get();
         for (OrderItem orderItem: order.getProducts()){
-            Optional<Product> product = productRepo.findById(orderItem.getProduct().getProductId());
+            Optional<Product> product = productRepo.findById(orderItem.getProductId());
             if (product.isPresent()){
                 product.get().setProductNum(product.get().getProductNum()+ orderItem.getAmount());
                 productRepo.save(product.get());
@@ -102,10 +122,10 @@ public class OrdersService {
         HashMap<Long, Integer> amounts = new HashMap<>();
         // put all old products to amounts
         for (OrderItem orderItem:order.get().getProducts()){
-            Optional<Product> product = productRepo.findById(orderItem.getProduct().getProductId());
+            Optional<Product> product = productRepo.findById(orderItem.getProductId());
             if (product.isPresent()){
                 Integer amountInStock = product.get().getProductNum()+orderItem.getAmount();
-                amounts.put(orderItem.getProduct().getProductId(),amountInStock);
+                amounts.put(orderItem.getProductId(),amountInStock);
             }
             else {
                 throw new InvalidInputException("Something went wrong");
@@ -114,7 +134,7 @@ public class OrdersService {
 
         // check availability for updateOrder
         for (OrderItem orderItem:updateOrder.getProducts()){
-            Optional<Product> product = productRepo.findById(orderItem.getProduct().getProductId());
+            Optional<Product> product = productRepo.findById(orderItem.getProductId());
             if(product.isPresent()){
                 Long productId =product.get().getProductId();
                 if (!amounts.containsKey(productId)){
@@ -151,4 +171,56 @@ public class OrdersService {
 
 }
 
+//    public Order newOrder(String orderNumber, List<OrderItem> orderItemList, Long userId, Address address){
+//        Optional<Order> order =orderRepo.findOrderByOrderNumber(orderNumber);
+//
+//        if(order.isPresent()){
+//            throw new InfoExistedException("Order Existed");
+//        }
+//
+//        //check validation for orderItem list
+//        for (OrderItem orderItem:orderItemList){
+//            Optional<Product> product = productRepo.findById(orderItem.getProductId());
+//            if(product.isPresent()){
+//
+//                if(product.get().getProductNum()<orderItem.getAmount()){
+//                    throw new InvalidInputException();
+//                }
+//            }
+//            else{
+//                throw new InfoNotFoundException("Product does not exist");
+//            }
+//
+//        }
+//
+//        //check validation for user id and address
+//        if(userId==null) {
+//            addressRepo.save(address);
+//        }
+//        else{
+//            Optional<User> user=userRepo.findById(userId);
+//            if(!user.isPresent()){
+//                throw new InfoNotFoundException("User Not Found");
+//            }
+//
+//            if(!user.get().getAddressList().contains(address)) {
+//                throw new InfoNotFoundException("Address Not Existed");
+//            }
+//        }
+//        //minus order number
+//        for (OrderItem orderItem:orderItemList){
+//            Optional<Product> product = productRepo.findById(orderItem.getProductId());
+//            if(product.isPresent()){
+//                product.get().setProductNum(product.get().getProductNum()- orderItem.getAmount());
+//                productRepo.save(product.get());
+//            }
+//            else{
+//                throw new InfoNotFoundException("Product does not exist");
+//            }
+//        }
+//
+//
+//        orderRepo.save(order.get());
+//        return newOrder;
+//    }
 

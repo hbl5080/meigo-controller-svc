@@ -26,7 +26,7 @@ public class Photo {
 
     @Lob
     @Basic(fetch = LAZY)
-    @Column(name = "imageBytes")
+    @Column(name = "image_bytes")
     private byte[] imageBytes;
 
     @JsonBackReference

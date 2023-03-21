@@ -10,8 +10,7 @@ import java.util.Optional;
 @Repository
 public interface OrderRepo extends JpaRepository<Order,Long> {
 
-    @Query("SELECT o FROM Order o WHERE o.orderNumber =: orderNumber ")
-    public Optional<Order> findOrderByOrderNumber(String orderNumber);
+    public Optional<Order> findByOrderNumber(String orderNumber);
 
 
 }

@@ -27,6 +27,9 @@ public class Address{
     @Column(name = "zipCode")
     private String zipCode;
 
+    @Column(name = "default_address")
+    private boolean defaultAddress = false;
+
     //Constructors
 
     public Address() {
@@ -88,6 +91,8 @@ public class Address{
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
     }
+
+
 
 }
 

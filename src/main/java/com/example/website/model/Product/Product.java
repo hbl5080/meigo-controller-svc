@@ -21,7 +21,7 @@ public class Product {
     @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "productCode",unique = true,nullable = false)
+    @Column(name = "product_code",unique = true,nullable = false)
     private String productCode;
 
     @NotEmpty(message = "Product Name can not be empty")
